@@ -6,22 +6,20 @@ using UnityEngine;
 
 public class MapController : MonoBehaviour
 {
-
-
-    private MapData mapData;
+    //private MapData mapData;
 
     //cell default size 100
     private const int CELL_SIZE = 100;
     //맵 최대 크기는 가로 9 세로 13
-    private int MAX_WIDTHCOUNT = 9;
-    private int MAX_HEIGHTCOUNT = 13;
+    //private int MAX_WIDTHCOUNT = 9;
+    //private int MAX_HEIGHTCOUNT = 13;
 
     private GameObject[][] tile_Map;
     private Dictionary<string, Sprite> sprite_dic;
 
     public GameObject Cell_Prefab;
 
-    public GameObject[] BrickPrefabs;
+    //public GameObject[] BrickPrefabs;
 
 
     //create map
@@ -30,10 +28,9 @@ public class MapController : MonoBehaviour
 
     private void Awake()
     {
-        //load map data
-        LoadMapData();
-
         
+
+        Application.targetFrameRate = 60;
 
         sprite_dic = new Dictionary<string, Sprite>();
 
@@ -42,8 +39,13 @@ public class MapController : MonoBehaviour
 
     private void Start()
     {
-        MAX_WIDTHCOUNT = mapData.width_Count;
-        MAX_HEIGHTCOUNT = mapData.height_Count;
+
+        //load map data
+        LoadMapData();
+
+        MapData mapData = GameDataMGR.Instance.mapData;
+        int MAX_WIDTHCOUNT = mapData.width_Count;
+        int MAX_HEIGHTCOUNT = mapData.height_Count;
 
         tile_Map = new GameObject[MAX_WIDTHCOUNT][];
         for (int i = 0; i < MAX_WIDTHCOUNT; i++)
@@ -64,9 +66,9 @@ public class MapController : MonoBehaviour
             }
         }
 
-        Sprite []sprites = Resources.LoadAll<Sprite>("Textures");
+        Sprite []sprites = Resources.LoadAll<Sprite>("Textures"); 
 
-        foreach(var child in sprites)
+        foreach (var child in sprites)
         {
             sprite_dic[child.name] = child;
         }
@@ -82,7 +84,7 @@ public class MapController : MonoBehaviour
     {
         //원래는 블럭 놓을수 있는 위치에만 생성해야하지만 임시로 일단 맵 최대크기 다 사용한다고 가정하고 생성하자.
         //일단 타일에 따른 처리는 아직 안하므로 높이를 4개 줄인상태로 9x9로 한다
-        GetComponent<GameField>().Fill_Bricks(MAX_WIDTHCOUNT, MAX_HEIGHTCOUNT - 4);
+        GetComponent<GameField>().Fill_Bricks();
         
     }
 
@@ -92,6 +94,8 @@ public class MapController : MonoBehaviour
 
 
         //읽어온 맵데이터 기반으로 오브젝트 생성
+        MapData mapData = GameDataMGR.Instance.mapData;
+
 
         int width_count = mapData.width_Count;
         int height_count = mapData.height_Count;
@@ -103,30 +107,36 @@ public class MapController : MonoBehaviour
             tile_Map[child.x][child.y].GetComponent<SpriteRenderer>().sprite = sprite_dic[child.name];
             tile_Map[child.x][child.y].GetComponent<SpriteRenderer>().size = new Vector2(CELL_SIZE, CELL_SIZE);
         }
+    }
 
-
-
+    public void Find_Shape()
+    {
+        GetComponent<GameField>().Find_Shape();
     }
 
     private void LoadMapData()
     {
         //TextAsset []mapJson = Resources.LoadAll<TextAsset>("MapJsonData");
 
-        TextAsset mapJson = Resources.Load<TextAsset>("MapJsonData/mapdata_ 0");
+        TextAsset mapJson = null;
+        mapJson = Resources.Load<TextAsset>("MapJsonData/mapdata_0");
 
         if(mapJson == null)
         {
-            //Debug.Log("null");
+            Debug.Log("null");
             return;
         }
-
+        MapData mapData = null;
         mapData = JsonUtility.FromJson<MapData>(mapJson.ToString());
+        
 
         if(mapData == null)
         {
-            //Debug.Log("mapData null");
+            Debug.Log("mapData null");
             return;
         }
+
+        GameDataMGR.Instance.mapData = mapData;
 
     }
 

@@ -138,10 +138,10 @@ Library: lib_burst_generated
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.Timeline.dll
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.2D.SpriteShape.Runtime.dll
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.2D.PixelPerfect.dll
+--root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Assembly-CSharp.dll
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.2D.Common.Runtime.dll
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.2D.IK.Runtime.dll
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.2D.Tilemap.Extras.dll
---root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Assembly-CSharp.dll
 --root-assembly=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/Unity.InternalAPIEngineBridge.001.dll
 --assembly-folder=/Users/Cho-L/Documents/workspace/Match3GamePractice/Match3Game/Match3GamePractice/Temp/StagingArea/Data/Managed/
 --pdb-search-paths=Temp/ManagedSymbols/

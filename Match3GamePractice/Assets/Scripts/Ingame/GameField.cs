@@ -29,7 +29,9 @@ public class GameField : MonoBehaviour
     private delegate bool CheckMatchForCreate(Vector2Int pos, BrickType type);
     private CheckMatchForCreate[] CheckMatchForCreates_Del;
 
-    private List<GameObject> m_BrickObj_List;
+    private Dictionary<Vector2Int, GameObject> m_BrickObj_Dic;
+
+    private MatchCheker m_matchCheker;
 
     private void Awake()
     {
@@ -47,11 +49,9 @@ public class GameField : MonoBehaviour
         CheckMatchForCreates_Del[8] = Check_3Brick_Row_Center;
         CheckMatchForCreates_Del[9] = Check_3Brick_Column_Center;
 
-        m_BrickObj_List = new List<GameObject>();
-        //for(int i = 0; i < 13; i++)
-        //{
-        //    m_bricks[]
-        //}
+        m_BrickObj_Dic = new Dictionary<Vector2Int, GameObject>();
+
+        m_matchCheker = new MatchCheker();
     }
 
     // Start is called before the first frame update
@@ -59,8 +59,8 @@ public class GameField : MonoBehaviour
     {
         for (int i = 0; i < 9; i++)
         {
-            m_bricks[i] = new BrickType[13];
-            for (int j = 0; j < 13; j++)
+            m_bricks[i] = new BrickType[9];
+            for (int j = 0; j < 9; j++)
             {
                 m_bricks[i][j] = BrickType.Empty;
             }
@@ -75,8 +75,7 @@ public class GameField : MonoBehaviour
     {
         //해당위치가 주변 브릭들과 관계에서 가능한 위치인가 체크하자
         //해당위치가 브릭이 올려질수 있는 타일인가
-        //3칸 세로, 3칸 가로, 4칸 세로, 4칸 가로, 5칸 세로, 5칸 가로
-        //4칸 사각형, 5칸 ㄱ자 4방향, T모양 5칸
+        
 
 
 
@@ -466,7 +465,7 @@ public class GameField : MonoBehaviour
     }
 
 
-    public void Fill_Bricks(int width_count, int height_count)
+    public void Fill_Bricks()
     {
 
         //일단 맵 전체에 브릭 생성
@@ -475,25 +474,38 @@ public class GameField : MonoBehaviour
         //vector2 넣고 랜덤으로 가져오기
 
         //원래는 가능한 타일 위치를 가져와서 해야함
-        if(m_BrickObj_List.Count > 0)
+
+        if (Shape_Flicker_Ie != null)
         {
-            for(int i = 0; i < max_widthCount; i++)
+            StopCoroutine(Shape_Flicker_Ie);
+            
+        }
+
+
+        max_widthCount = GameDataMGR.Instance.MaxWidthCount;
+        max_heightCount = GameDataMGR.Instance.MaxHeightCount - 4;
+
+        if (m_BrickObj_Dic.Count > 0)
+        {
+            for (int i = 0; i < max_widthCount; i++)
             {
-                for(int j = 0; j < max_heightCount; j++)
+                for (int j = 0; j < max_heightCount; j++)
                 {
                     m_bricks[i][j] = BrickType.Empty;
                 }
             }
 
-            foreach(var child in m_BrickObj_List)
+            foreach(var child in m_BrickObj_Dic)
             {
-                Destroy(child);
+                var temp = child.Value;
+                Destroy(temp);
             }
-            m_BrickObj_List.Clear();
+            m_BrickObj_Dic.Clear();
         }
 
-        max_widthCount = width_count;
-        max_heightCount = height_count;
+
+        
+
 
         //Vector2[] brick_pos_vec = new Vector2[width_count * height_count];
 
@@ -502,9 +514,9 @@ public class GameField : MonoBehaviour
 
         //list에 넣고 랜덤하게 뽑아오기
 
-        for (int i = 0; i < height_count; i++)
+        for (int i = 0; i < max_heightCount; i++)
         {
-            for(int j = 0; j < width_count; j++)
+            for(int j = 0; j < max_widthCount; j++)
             {
                 //brick_pos_vec[i * height_count + j] = new Vector2(j, i);
                 brick_pos_list.Add(new Vector2Int(j, i));
@@ -529,35 +541,211 @@ public class GameField : MonoBehaviour
         
 
 
-        for (int i = 0; i < width_count; i++)
+        for (int i = 0; i < max_widthCount; i++)
         {
-            for (int j = 0; j < height_count; j++)
+            for (int j = 0; j < max_heightCount; j++)
             {
                 Find_PositionableBrick(new Vector2Int(i, j));
-                CreateBrick(new Vector2((width_count * 100 / -2.0f + 50) + 100 * i,
-                    (height_count * 100 / -2.0f + 50) + 100 * j), m_bricks[i][j]);
+                CreateBrick(new Vector2((max_widthCount * 100 / -2.0f + 50) + 100 * i,
+                    (max_heightCount * 100 / -2.0f + 50) + 100 * j), m_bricks[i][j], new Vector2Int(i, j));
             }
         }
 
+        swap_state = false;
 
     }
 
 
-    private void CreateBrick(Vector2 pos, BrickType brickType)
+    private void CreateBrick(Vector2 pos, BrickType brickType, Vector2Int coordinate)
     {
         GameObject obj = Instantiate(BrickPrefabs[(int)brickType]);
         obj.transform.SetParent(transform);
         obj.transform.localPosition = pos;
+        obj.GetComponent<Brick>().coordinate = coordinate;
 
-        m_BrickObj_List.Add(obj);
+        //특정 좌표에 있는 오브젝트를 알 필요가 있기때문에 리스트는 안된다
+
+        m_BrickObj_Dic[coordinate] = obj;
+
+        //m_BrickObj_List.Add(obj);
+
+        
 
         //add obj
 
     }
 
+
+    private GameObject GetTouchedBrick(Vector2 pos)
+    {
+        Ray2D ray = new Ray2D(pos, Vector2.zero);
+        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+        if (hit.collider != null && hit.collider.tag == "Brick")
+        {
+            return hit.collider.gameObject;
+        }
+        return null;
+
+    }
+
+    private bool Swap_Two_Brick_Check(GameObject first, GameObject second)
+    {
+        //두 오브젝트 스왑 무빙 요청 처리
+        //바뀌어도 지워지는게 없으면 다시 제자리로
+        //바뀌어서 지워지면 그다음 프로세스
+
+        //일단 스왑부터 해보자. 지워지는건지 미리 계산을 해놓고 무빙 해야하는지 아니면 한번 이동을 하고
+        //지워지는거 계산을 한후에 안지워지면 다시 역무빙을 해야하는지...
+        //일단 스왑부터 해보자
+
+        //두번째 오브젝트가 대각선이나 건너뛴 오브젝트일수 있다.
+        //왼쪽 대각선은 왼쪽으로 오른쪽 대각선은 오른쪽
+        //건너뛴 오브젝트면 그방향 한칸이다
+
+
+
+
+        //좌우측 우선임
+        Vector2Int first_coordinate = first.GetComponent<Brick>().coordinate;
+        int dx = second.GetComponent<Brick>().coordinate.x - first.GetComponent<Brick>().coordinate.x;
+        int dy = second.GetComponent<Brick>().coordinate.y - first.GetComponent<Brick>().coordinate.y;
+
+        if(dx != 0)
+        {
+            dx = dx > 0 ? 1 : -1;
+            dy = 0;
+        }
+        else
+        {
+            dy = dy > 0 ? 1 : -1;
+            dx = 0;
+        }
+
+        Vector2 first_pos = first.transform.position;
+        Vector2 second_pos = m_BrickObj_Dic[first_coordinate + new Vector2Int(dx, dy)].GetComponent<Brick>().transform.position;
+
+        first.GetComponent<Brick>().Move(second_pos);
+        m_BrickObj_Dic[first_coordinate + new Vector2Int(dx, dy)].GetComponent<Brick>().Move(first_pos);
+
+
+        //지워지는 모양인지 체크하고 무빙
+        //모든모양 체크
+        //3칸 세로, 3칸 가로, 4칸 세로, 4칸 가로, 5칸 세로, 5칸 가로
+        //4칸 사각형 4방향, 5칸 ㄱ자 4방향, T모양 5칸 4방향
+        //지워지는 브릭 좌표 다 넣고 (중복안되게)
+
+        
+
+        return false;
+
+    }
+
+    public void Find_Shape()
+    {
+        List<Vector2Int> shape_pos_list = m_matchCheker.Find_Shape(m_bricks);
+        if(shape_pos_list == null)
+        {
+            //매치가 되는 브릭이 없으므로 브릭 리셋
+            return;
+        }
+
+        //브릭 반짝이 표시 => 알파값 변경
+        //일단 임시로 여기에 소스 작성
+        
+
+        if(Shape_Flicker_Ie != null)
+        {
+            StopCoroutine(Shape_Flicker_Ie);
+            foreach (var child in shape_pos_list)
+            {
+                m_BrickObj_Dic[child].GetComponentInChildren<SpriteRenderer>().color = new Color(1, 1, 1, 1.0f);
+            }
+        }
+        Shape_Flicker_Ie = Shape_Fliicker_Cor(shape_pos_list);
+        StartCoroutine(Shape_Flicker_Ie);
+    }
+
+    IEnumerator Shape_Flicker_Ie;
+    IEnumerator Shape_Fliicker_Cor(List<Vector2Int> pos_list)
+    {
+        float alpha = 1.0f;
+        float value = -0.1f;
+        while(true)
+        {
+            alpha += value;
+            foreach(var child in pos_list)
+            {
+                m_BrickObj_Dic[child].GetComponentInChildren<SpriteRenderer>().color = new Color(1, 1, 1, alpha);
+            }
+            if(alpha >= 1.0f)
+            {
+                value = -0.1f;
+            }
+            if(alpha <= 0.5f)
+            {
+                value = 0.1f;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private GameObject begin_selected_obj;
+    private GameObject second_selected_obj;
+    private bool swap_state = false;
     // Update is called once per frame
     void Update()
     {
+        //Touch event
+
+
+        if(Input.touchCount > 0 && !swap_state)
+        {
+            Touch touch = Input.GetTouch(0);
+            Vector2 touchPos = touch.position;
+            Vector2 pos = Camera.main.ScreenToWorldPoint(touchPos);
+
+
+
+            switch(touch.phase)
+            {
+                case TouchPhase.Began:
+                    begin_selected_obj = GetTouchedBrick(pos);
+                    
+                    break;
+
+                case TouchPhase.Moved:
+                    //선택된 브릭이 있어야하고 이미 브릭이 이동상태가 아니어야한다.
+                    //선택된 브릭이 있는 상태로 이동해서 브릭이 바뀌면 이동이라 판단.
+                    if (begin_selected_obj != null)
+                    {
+
+                        //대각선이 선택될 수도 있기때문에 보정이 필요하다.
+                        //손가락을 빠르게 이동하면 한칸 건너서 선택되기도 한다.
+                        //
+                        second_selected_obj = GetTouchedBrick(pos);
+
+                        if (second_selected_obj != null && second_selected_obj != begin_selected_obj)
+                        {
+                            swap_state = true;
+                            //스왑 상태로 상태변경 할 것.
+                            //브릭 스왑 진행하고 스왑이 완료되거나(아무것도 못지운경우)
+                            //지우거나 아이템 효과가 끝나는 등 모든 프로세스 진행이 완료되면 다시 상태 변경
+                            Swap_Two_Brick_Check(begin_selected_obj, second_selected_obj);
+                        }
+                    }
+                    break;
+                     
+
+                case TouchPhase.Ended:
+                    if(begin_selected_obj != null)
+                        begin_selected_obj = null;
+                    break;
+            }
+
+            
+        }
+
+        
         
     }
 }
