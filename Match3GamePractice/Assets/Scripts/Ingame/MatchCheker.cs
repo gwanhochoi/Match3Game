@@ -2,6 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public enum MoveDir{
+
+    Left = 0,
+    Right,
+    Up,
+    Down
+}
+
+
 public class MatchCheker
 {
 
@@ -11,10 +21,19 @@ public class MatchCheker
     //private BrickType[] m_Bricks_copy;
 
     private ShapeData m_ShapeData;
+    private MatchData m_MatchData;
+
+    private MatchResult m_MatchResult;
+    public MatchResult matchResult
+    {
+        get { return m_MatchResult; }
+    }
 
     public MatchCheker()
     {
         m_ShapeData = new ShapeData();
+        m_MatchData = new MatchData();
+        m_MatchResult = new MatchResult();
     }
 
     public void Init()
@@ -26,7 +45,66 @@ public class MatchCheker
         
     }
 
-    public List<Vector2Int> Find_Shape(BrickType[][] bricks)
+    public MatchResult MatchCheck_SwapTwoPoint(Tile[][] tiles, MoveDir dir, Vector2Int dst, Vector2Int src)
+    {
+        m_MatchResult.Clear();
+        MatchCheck_Point(tiles, dir, dst);
+        if (dir == MoveDir.Left || dir == MoveDir.Right)
+            dir = MoveDir.Left == dir ? MoveDir.Right : MoveDir.Left;
+        else
+            dir = MoveDir.Up == dir ? MoveDir.Down : MoveDir.Up;
+        MatchCheck_Point(tiles, dir, src);
+
+        if (m_MatchResult.Count() == 0)
+            return null;
+        return m_MatchResult;
+    }
+
+    private void MatchCheck_Point(Tile[][] tiles, MoveDir dir, Vector2Int coordinate)
+    {
+        //이동된 상태의 bricks를 받아와서 좌표기준 매치검사
+        //상하좌우중 어느방향으로 움직여서 들어왔는가에 따라 검사
+        //지워지는 좌표를 중복없이 넣는다
+        //지워지고 아이템 생성도 판단해야한다. 가장 높은 아이템 하나가 생성되고 생성되는 위치는
+        //주어진 coordinate 위치에 생성
+        List<Match> matchChecker = m_MatchData.dirCheckDataList[(int)dir];
+        //MatchResult matchResult = new MatchResult();
+        List<Vector2Int> clearPos_List = new List<Vector2Int>();
+        foreach (var matchShape in matchChecker)
+        {
+            BrickType std_type = tiles[coordinate.x][coordinate.y].bricktype;
+            int type_count = 0;
+            int match_count = matchShape.d_list.Count;
+            clearPos_List.Add(coordinate);
+            foreach (var d in matchShape.d_list)
+            {
+                Vector2Int d_coordinate = coordinate + d;
+                if (!CheckCoordinate_InField(d_coordinate))
+                    break;
+                if (std_type != tiles[d_coordinate.x][d_coordinate.y].bricktype)
+                    break;
+                clearPos_List.Add(d_coordinate);
+                type_count++;
+            }
+            if(match_count == type_count)
+            {
+                //지워지는 조건 만족했으므로 좌표를 따로 보관
+                //어떤 아이템인지도 matchShape에서 가져오자
+                //좌표랑 아이템 담는 클래스 하나 생성
+                m_MatchResult.Add_ClearCoorinatePos(clearPos_List);
+                m_MatchResult.bomb = matchShape.bomb;
+            }
+            clearPos_List.Clear();
+
+        }
+
+        //if (m_MatchResult.Count() == 0)
+        //    return null;
+        //return m_MatchResult;
+
+    }
+
+    public List<Vector2Int> Find_Shape(Tile[][] tiles)
     {
         //현재 브릭들중 지울 수 있는 브릭모양을 찾는다
 
@@ -39,16 +117,18 @@ public class MatchCheker
             //shape모양 좌표가져와서 해당 브릭들이 모두 같은 타입인지 검사
 
 
-            for (int i = 0; i < bricks.Length; i++)
+            for (int i = 0; i < tiles.Length; i++)
             {
-                for (int j = 0; j < bricks[i].Length; j++)
+                for (int j = 0; j < tiles[i].Length; j++)
                 {
+                    if (tiles[i][j].groundType == GroundType.Back)
+                        continue;
                     Vector2Int std_pos = new Vector2Int(i + shape.d_list[0].x, j + shape.d_list[0].y);
                     if (!CheckCoordinate_InField(std_pos))
                         continue;
                     int shape_count = shape.d_list.Count;
                     int type_count = 1;
-                    BrickType type = bricks[std_pos.x][std_pos.y];
+                    BrickType type = tiles[std_pos.x][std_pos.y].bricktype;
                     List<Vector2Int> coordinate_list = new List<Vector2Int>();
                     coordinate_list.Add(std_pos);
                     for (int k = 1; k < shape_count; k++)
@@ -56,11 +136,13 @@ public class MatchCheker
                         Vector2Int pos = new Vector2Int(i + shape.d_list[k].x, j + shape.d_list[k].y);
                         if (!CheckCoordinate_InField(pos))
                             break;
-                        if (type == bricks[pos.x][pos.y])
+                        if (type == tiles[pos.x][pos.y].bricktype)
                         {
                             coordinate_list.Add(pos);
                             type_count++;
+                            continue;
                         }
+                        break;
 
                     }
 
@@ -69,12 +151,12 @@ public class MatchCheker
                         //해당 모양 좌표의 브릭 타입이 모두 같다
                         //타입과 좌표 따로 갖고 있자
 
-                        Debug.Log("Bricktype = " + type);
+                        //Debug.Log("Bricktype = " + type);
 
-                        foreach (var child in coordinate_list)
-                        {
-                            Debug.Log("[" + child.x + "," + child.y + "]");
-                        }
+                        //foreach (var child in coordinate_list)
+                        //{
+                        //    Debug.Log("[" + child.x + "," + child.y + "]");
+                        //}
 
 
                         return coordinate_list; //일단 하나만 찾자
@@ -84,19 +166,16 @@ public class MatchCheker
                 }
             }
 
-            
-
         }
 
 
         return null;
 
-        
     }
 
     private bool CheckCoordinate_InField(Vector2Int pos)
     {
-        if (pos.x < 0 || pos.x >= 9 || pos.y < 0 || pos.y >= 9)
+        if (pos.x < 0 || pos.x >= max_widthCount || pos.y < 0 || pos.y >= max_heightCount)
             return false;
         return true;
     }

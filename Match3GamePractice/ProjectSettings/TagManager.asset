@@ -42,9 +42,15 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Tile
+  - name: back
+    uniqueID: 591477069
+    locked: 0
+  - name: Floor
     uniqueID: 155912221
     locked: 0
   - name: Brick
     uniqueID: 2639160921
+    locked: 0
+  - name: Cover
+    uniqueID: 2440699937
     locked: 0

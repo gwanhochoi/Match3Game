@@ -618,7 +618,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4745c363ad1be4d94853deea702b1987, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Cell_Prefab: {fileID: 433287258894109332, guid: b67d27fe25432478c8cfeb037d05674e, type: 3}
 --- !u!114 &1054705961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -631,6 +630,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed7723336dcdc470a9016754c460a2e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Tile_Prefab: {fileID: 433287258894109332, guid: fbdb99c9e8881444f829b9f71ec5a3b5, type: 3}
   BrickPrefabs:
   - {fileID: 2339242397980731055, guid: 4247221c549a4407ca242501e229e69e, type: 3}
   - {fileID: 2339242397980731055, guid: 98adcb84dba384c2f8a9bc4086f18627, type: 3}
@@ -1041,8 +1041,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1054705960}
-        m_TargetAssemblyTypeName: MapController, Assembly-CSharp
+      - m_Target: {fileID: 1054705961}
+        m_TargetAssemblyTypeName: GameField, Assembly-CSharp
         m_MethodName: CreateGameField
         m_Mode: 1
         m_Arguments:

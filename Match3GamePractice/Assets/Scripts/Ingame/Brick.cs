@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class Brick : MonoBehaviour
 {
@@ -26,24 +27,38 @@ public class Brick : MonoBehaviour
         set { m_coordinate = value; }
     }
 
+    private SpriteRenderer m_SpriteRenderer;
+    
 
     public Brick(BrickType type)
     {
         m_type = type;
+        
+    }
+
+    private void Awake()
+    {
+        m_SpriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
 
-
-    public void Move(Vector2 dst)
+    public void Move(Vector2 dst, Action Func)
     {
         //dst까지 이동하는데 부드럽게 이동해야함
-
-        //StartCoroutine(Move_Cor(dst));
-        StartCoroutine(ReturnMove_Cor(dst));
+        //GameField.action_count++;
+        StartCoroutine(Move_Cor(dst, Func));
+        
 
     }
 
-    IEnumerator Move_Cor(Vector2 dst)
+    public void ReturnMove(Vector2 dst, Action Func)
+    {
+        //GameField.action_count++;
+        StartCoroutine(ReturnMove_Cor(dst, Func));
+    }
+
+
+    IEnumerator Move_Cor(Vector2 dst, Action Func)
     {
         float elapseTime = 0;
         float waitTime = 0.15f;
@@ -57,12 +72,13 @@ public class Brick : MonoBehaviour
 
         transform.position = dst;
         //Debug.Log("move complete");
-        yield return null;
+        Func();
+        
 
 
     }
 
-    IEnumerator ReturnMove_Cor(Vector2 dst)
+    IEnumerator ReturnMove_Cor(Vector2 dst, Action Func)
     {
         Vector3 originpos = transform.position;
         float elapseTime = 0;
@@ -88,9 +104,48 @@ public class Brick : MonoBehaviour
 
         transform.position = originpos;
 
-        yield return null;
+        Func();
 
 
+    }
+
+    public void Twinkle()
+    {
+        if (Shape_Twinkle_Ie != null)
+            StopCoroutine(Shape_Twinkle_Ie);
+
+        m_SpriteRenderer.color = new Color(1, 1, 1);
+        Shape_Twinkle_Ie = Shape_Twinkle_Cor();
+        StartCoroutine(Shape_Twinkle_Ie);
+    }
+
+    public void StopTwinkle()
+    {
+        if (Shape_Twinkle_Ie != null)
+            StopCoroutine(Shape_Twinkle_Ie);
+
+        m_SpriteRenderer.color = new Color(1, 1, 1);
+    }
+
+    IEnumerator Shape_Twinkle_Ie;
+    IEnumerator Shape_Twinkle_Cor()
+    {
+        float color = 1.0f;
+        float value = -0.1f;
+        while (true)
+        {
+            color += value;
+            m_SpriteRenderer.color = new Color(color, color, color);
+            if (color >= 1.0f)
+            {
+                value = -0.1f;
+            }
+            if (color <= 0.5f)
+            {
+                value = 0.1f;
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
 }
