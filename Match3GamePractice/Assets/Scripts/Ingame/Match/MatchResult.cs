@@ -6,11 +6,17 @@ using UnityEngine;
 
 public class MatchResult
 {
-    private List<Vector2Int> m_ClearCoordinateList;
-    public List<Vector2Int> ClearCoordinateList
+    private List<Tile> m_ClearTileList;
+    public List<Tile> ClearTileList
     {
-        get { return m_ClearCoordinateList; }
+        get { return m_ClearTileList; }
     }
+
+    //private List<Vector2Int> m_ClearCoordinateList;
+    //public List<Vector2Int> ClearCoordinateList
+    //{
+    //    get { return m_ClearCoordinateList; }
+    //}
     private Bomb m_bomb;
     public Bomb bomb
     {
@@ -27,30 +33,45 @@ public class MatchResult
 
     public MatchResult()
     {
-        m_ClearCoordinateList = new List<Vector2Int>();
+        m_ClearTileList = new List<Tile>();
+        //m_ClearCoordinateList = new List<Vector2Int>();
         m_bomb = Bomb.None;
     }
 
-    public void Add_ClearCoorinatePos(List<Vector2Int> list)
+    public void Add_ClearTile(List<Tile> list)
     {
         foreach(var child in list)
         {
-            if(m_ClearCoordinateList.Contains(child))
+            if(m_ClearTileList.Contains(child))
             {
+                //Debug.Log("contain");
                 continue;
             }
-            m_ClearCoordinateList.Add(child);
+            //Debug.Log("Add");
+            m_ClearTileList.Add(child);
         }
     }
+    //public void Add_ClearCoorinatePos(List<Vector2Int> list)
+    //{
+    //    foreach(var child in list)
+    //    {
+    //        if(m_ClearCoordinateList.Contains(child))
+    //        {
+    //            continue;
+    //        }
+    //        m_ClearCoordinateList.Add(child);
+    //    }
+    //}
 
     public int Count()
     {
-        return m_ClearCoordinateList.Count;
+        return m_ClearTileList.Count;
     }
 
     public void Clear()
     {
-        m_ClearCoordinateList.Clear();
+        m_ClearTileList.Clear();
+        //m_ClearCoordinateList.Clear();
         m_bomb = Bomb.None;
     }
 

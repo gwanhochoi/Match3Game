@@ -28,7 +28,8 @@ public class Brick : MonoBehaviour
     }
 
     private SpriteRenderer m_SpriteRenderer;
-    
+
+
 
     public Brick(BrickType type)
     {
@@ -41,13 +42,19 @@ public class Brick : MonoBehaviour
         m_SpriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
+    public void MoveReserVation(Tile tile)
+    {
+        //아래 왼쪽아래 오른쪽 아래 우선순위
+        
+        
+    }
+   
 
     public void Move(Vector2 dst, Action Func)
     {
         //dst까지 이동하는데 부드럽게 이동해야함
         //GameField.action_count++;
         StartCoroutine(Move_Cor(dst, Func));
-        
 
     }
 
@@ -62,15 +69,15 @@ public class Brick : MonoBehaviour
     {
         float elapseTime = 0;
         float waitTime = 0.15f;
-        Vector3 currentPos = transform.position;
+        Vector3 currentPos = transform.localPosition;
         while(elapseTime < waitTime)
         {
-            transform.position = Vector3.Lerp(currentPos, dst, elapseTime / waitTime);
+            transform.localPosition = Vector3.Lerp(currentPos, dst, elapseTime / waitTime);
             elapseTime += Time.deltaTime;
             yield return null;
         }
 
-        transform.position = dst;
+        transform.localPosition = dst;
         //Debug.Log("move complete");
         Func();
         
@@ -80,29 +87,29 @@ public class Brick : MonoBehaviour
 
     IEnumerator ReturnMove_Cor(Vector2 dst, Action Func)
     {
-        Vector3 originpos = transform.position;
+        Vector3 originpos = transform.localPosition;
         float elapseTime = 0;
         float waitTime = 0.15f;
-        Vector3 currentPos = transform.position;
+        Vector3 currentPos = transform.localPosition;
         while (elapseTime < waitTime)
         {
-            transform.position = Vector3.Lerp(currentPos, dst, elapseTime / waitTime);
+            transform.localPosition = Vector3.Lerp(currentPos, dst, elapseTime / waitTime);
             elapseTime += Time.deltaTime;
             yield return null;
         }
 
-        transform.position = dst;
+        transform.localPosition = dst;
         //Debug.Log("move complete");
-        currentPos = transform.position;
+        currentPos = transform.localPosition;
         elapseTime = 0;
         while (elapseTime < waitTime)
         {
-            transform.position = Vector3.Lerp(currentPos, originpos, elapseTime / waitTime);
+            transform.localPosition = Vector3.Lerp(currentPos, originpos, elapseTime / waitTime);
             elapseTime += Time.deltaTime;
             yield return null;
         }
 
-        transform.position = originpos;
+        transform.localPosition = originpos;
 
         Func();
 

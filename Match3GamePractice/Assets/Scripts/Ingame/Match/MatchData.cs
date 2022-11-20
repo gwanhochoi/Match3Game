@@ -41,6 +41,12 @@ public class MatchData
         get { return m_dirCheckDataList; }
     }
 
+    private List<Match> m_allCheckDataList;
+    public List<Match> allCheckDataList
+    {
+        get { return m_allCheckDataList; }
+    }
+
     public MatchData()
     {
         m_matchData_List = new List<Match>(); 
@@ -49,6 +55,7 @@ public class MatchData
         m_rightCheckDataList = new List<Match>();
         m_upCheckDataList = new List<Match>();
         m_downCheckDataList = new List<Match>();
+        m_allCheckDataList = new List<Match>();
 
         var match5row = new Match5Row();
         var match5column = new Match5Column();
@@ -156,6 +163,32 @@ public class MatchData
         m_dirCheckDataList[1] = m_rightCheckDataList;
         m_dirCheckDataList[2] = m_upCheckDataList;
         m_dirCheckDataList[3] = m_downCheckDataList;
+
+        //all
+
+        m_allCheckDataList.Add(match5row);
+        m_allCheckDataList.Add(match5column);
+        m_allCheckDataList.Add(match5T1);
+        m_allCheckDataList.Add(match5T2);
+        m_allCheckDataList.Add(match5T3);
+        m_allCheckDataList.Add(match5T4);
+        m_allCheckDataList.Add(match5RA1);
+        m_allCheckDataList.Add(match5RA2);
+        m_allCheckDataList.Add(match5RA3);
+        m_allCheckDataList.Add(match5RA4);
+        m_allCheckDataList.Add(match4row1);
+        m_allCheckDataList.Add(match4row2);
+        m_allCheckDataList.Add(match4column1);
+        m_allCheckDataList.Add(match4column2);
+        m_allCheckDataList.Add(match3row1);
+        m_allCheckDataList.Add(match3row2);
+        m_allCheckDataList.Add(match3row3);
+        m_allCheckDataList.Add(match3column1);
+        m_allCheckDataList.Add(match3column2);
+        m_allCheckDataList.Add(match3column3);
+
+
+
 
     }
 }

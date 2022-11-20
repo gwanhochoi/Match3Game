@@ -54,3 +54,6 @@ TagManager:
   - name: Cover
     uniqueID: 2440699937
     locked: 0
+  - name: Charge
+    uniqueID: 4019059915
+    locked: 0
